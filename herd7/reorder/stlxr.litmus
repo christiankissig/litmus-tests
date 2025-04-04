@@ -1,0 +1,24 @@
+AArch64 stlxr
+{
+0:X3=z;
+1:X1=x; 1:X2=y; 1:X3=z;
+}
+ P0               | P1                   ;
+ MOV W0,#1        | MOV W5,#0            ;
+ STLR W0,[X3]     | STR W5,[X1]          ;
+                  | MOV W5,#0            ;
+                  | STR W5,[X2]          ;
+                  | MOV W5,#0            ;
+                  | STR W5,[X3]          ;
+                  | MOV W5,#1            ;
+                  | STR W5,[X1]          ;
+                  | RETRY: LDAXR W6,[X3] ;
+                  | CMP W6,#0            ;
+                  | B.EQ EXIT            ;
+                  | MOV W5,#1            ;
+                  | STXR W7,W5,[X3]      ;
+                  | CBNZ W7,RETRY        ;
+                  | EXIT:  MOV W8,#1     ;
+                  | STR W8,[X2]          ;
+exists
+(x=1 /\ y=0)
