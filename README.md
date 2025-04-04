@@ -5,5 +5,5 @@ compiler and hardware effects.
 
 The repository contains
 
-* [executable litmus tests in c format](c/README.md)
-* [litmus tests](herd7/README.md) instrumented by [Herdtools7](https://diy.inria.fr)
+* [executable litmus tests in c format](c/)
+* [litmus tests](herd7/) instrumented by [Herdtools7](https://diy.inria.fr)
