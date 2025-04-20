@@ -48,7 +48,19 @@ void *thread_2(void *arg) {
 
     // Wait for thread 1 to execute the jump
     while (jump_completed == 0) {
+#if defined(__x86_64__) || defined(__i386__)
+      // x86/x86-64 architecture
       __asm__ volatile("pause" ::: "memory");
+#elif defined(__aarch64__) || defined(__arm__)
+      // ARM architecture
+      __asm__ volatile("yield" ::: "memory");
+#elif defined(__riscv)
+      // RISC-V architecture
+      __asm__ volatile("pause" ::: "memory");
+#else
+      // Force compilation to fail with an error message
+      #error "Unsupported architecture for spin-wait instruction"
+#endif
     }
 
     Y = 1;
