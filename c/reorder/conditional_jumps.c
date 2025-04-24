@@ -1,13 +1,11 @@
 #include <pthread.h>
-#include <stdatomic.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 
 // shared variables
-int r1 = 0;
-atomic_int r2 = 0;
+int r1 = 0, r2 = 0;
 int X = 0, Y = 0;
 int Z = 0;
 
@@ -66,7 +64,20 @@ void *thread_2(void *arg) {
     }
 
     Y = 1;
-    atomic_store_explicit(&r2, X, memory_order_release);
+#if defined(__x86_64__) || defined(__i386__)
+      // x86/x86-64 architecture
+      __asm__ volatile("mfence" ::: "memory");
+#elif defined(__aarch64__) || defined(__arm__)
+      // ARM architecture
+      __asm__ volatile("dmb" ::: "memory");
+#elif defined(__riscv)
+      // RISC-V architecture
+      __asm__ volatile("fence" ::: "memory");
+#else
+      // Force compilation to fail with an error message
+      #error "Unsupported architecture for spin-wait instruction"
+#endif
+    r2 = X;
 
     // Check for reordering anomaly
     // If r2=0 (meaning X=1 from before the jump hasn't been observed yet)

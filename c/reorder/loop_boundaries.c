@@ -1,5 +1,4 @@
 #include <pthread.h>
-#include <stdatomic.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -64,9 +63,23 @@ void* thread_2(void* arg) {
         
         // Now set Y=1
         Y = 1;
+
+#if defined(__x86_64__) || defined(__i386__)
+      // x86/x86-64 architecture
+      __asm__ volatile("mfence" ::: "memory");
+#elif defined(__aarch64__) || defined(__arm__)
+      // ARM architecture
+      __asm__ volatile("dmb" ::: "memory");
+#elif defined(__riscv)
+      // RISC-V architecture
+      __asm__ volatile("fence" ::: "memory");
+#else
+      // Force compilation to fail with an error message
+      #error "Unsupported architecture for spin-wait instruction"
+#endif
         
         // Read final value of X
-        atomic_store_explicit(&r2, X, memory_order_release);
+        r2 = X;
         
         // Check for reordering anomaly:
         // If r2=0 (meaning X=1 from first iteration wasn't observed) 
