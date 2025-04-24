@@ -1,11 +1,13 @@
+#include <pthread.h>
+#include <stdatomic.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <pthread.h>
-#include <stdbool.h>
 #include <unistd.h>
 
 // shared variables
-int r1 = 0, r2 = 0;
+int r1 = 0;
+atomic_int r2 = 0;
 int X = 0, Y = 0;
 int Z = 0;
 
@@ -64,7 +66,7 @@ void *thread_2(void *arg) {
     }
 
     Y = 1;
-    r2 = X;
+    atomic_store_explicit(&r2, X, memory_order_release);
 
     // Check for reordering anomaly
     // If r2=0 (meaning X=1 from before the jump hasn't been observed yet)

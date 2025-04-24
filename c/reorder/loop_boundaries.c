@@ -1,14 +1,14 @@
+#include <pthread.h>
+#include <stdatomic.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <pthread.h>
-#include <stdbool.h>
 #include <unistd.h>
 
 // Shared variables
-int X = 0;
-int Y = 0;
+int X = 0, Y = 0;
 int r1 = 0;
-int r2 = 0;
+atomic_int r2 = 0;
 volatile int iterations_completed = 0;
 volatile bool test_running = true;
 
@@ -66,7 +66,7 @@ void* thread_2(void* arg) {
         Y = 1;
         
         // Read final value of X
-        r2 = X;
+        atomic_store_explicit(&r2, X, memory_order_release);
         
         // Check for reordering anomaly:
         // If r2=0 (meaning X=1 from first iteration wasn't observed) 
